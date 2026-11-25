@@ -89,6 +89,7 @@ b,strong{font-weight:600}
 .board-wrap{border-radius:12px;overflow:hidden}
 @media(max-width:600px){.board .hide-s{display:none}}
 .empty{padding:22px 4px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line)}
+.tie .empty{border-top:0;padding:8px 0;margin:0}
 
 /* ---------- 对阵卡 ---------- */
 .tie{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px 13px;margin-bottom:13px;box-shadow:var(--shadow)}
@@ -346,7 +347,7 @@ html[data-role="viewer"] .admin-only{display:none!important}
 
 <script>
 /* 构建时替换：口令校验哈希 / 头像表 / 初始数据 / 页面版本号 */
-window.__BUILD_ID__ = "a725cfd40ed5";
+window.__BUILD_ID__ = "256207564f44";
 window.__ADMIN_HASH__ = "ff3e2adb15dc9b521025b2d12455dfe17dd3d728cf2875d1f03c0e383d1656ce";
 window.__AVATARS__ = {};
 window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"men":[],"women":[]},"draw":null,"mixed":null,"order":[],"ties":{},"updatedAt":null};
