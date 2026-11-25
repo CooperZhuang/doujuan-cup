@@ -159,8 +159,7 @@ b,strong{font-weight:600}
 .team .pairs span b{font-weight:500;color:var(--muted);font-size:11px;margin-right:6px}
 
 /* ---------- 队员 ---------- */
-.mates{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;margin-bottom:2px}
-@media(min-width:560px){.mates{grid-template-columns:1fr 1fr 1fr}}
+.mates{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px 8px;margin-bottom:2px}
 .mate{display:flex;align-items:center;gap:6px;min-width:0}
 .mate .av{width:22px;height:22px;border-radius:50%;flex:none;object-fit:cover;background:var(--paper-2);color:var(--muted);
   font-size:10px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);overflow:hidden}
@@ -233,11 +232,22 @@ dialog::backdrop{background:rgba(26,22,17,.42);backdrop-filter:blur(2px)}
   pointer-events:none;transition:.22s;max-width:86vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.2)}
 #toast.show{opacity:.97;transform:translateX(-50%) translateY(0)}
 
+#demoBar{position:sticky;top:0;z-index:30;height:34px;display:flex;align-items:center;justify-content:center;
+  gap:10px;background:#FFF1C9;border-bottom:1px solid #E5C87A;color:#7A5A12;font-size:12px;padding:0 14px}
+#demoBar[hidden]{display:none}
+#demoBar .btn{border-color:#E5C87A;background:#FFF8E2;color:#7A5A12;padding:3px 10px;font-size:11.5px}
+html[data-demo="1"] .bar{top:34px}
+
 footer{padding:40px 0 46px;text-align:center;font-size:11.5px;color:var(--muted);letter-spacing:.04em}
 html[data-role="viewer"] .admin-only{display:none!important}
 </style>
 </head>
 <body>
+
+<div id="demoBar" hidden>
+  <span>演示模式 · 名单与比分均为示例，不会发布</span>
+  <button class="btn" data-act="exit-demo">退出演示</button>
+</div>
 
 <header class="hero">
   <div class="wrap">
@@ -347,7 +357,7 @@ html[data-role="viewer"] .admin-only{display:none!important}
 
 <script>
 /* 构建时替换：口令校验哈希 / 头像表 / 初始数据 / 页面版本号 */
-window.__BUILD_ID__ = "256207564f44";
+window.__BUILD_ID__ = "3475107c25fe";
 window.__ADMIN_HASH__ = "ff3e2adb15dc9b521025b2d12455dfe17dd3d728cf2875d1f03c0e383d1656ce";
 window.__AVATARS__ = {};
 window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"men":[],"women":[]},"draw":null,"mixed":null,"order":[],"ties":{},"updatedAt":null};
@@ -381,6 +391,8 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
   let lastPushed = '';
   let autoSync = true;
   try { autoSync = localStorage.getItem(AUTOSYNC_KEY) !== '0'; } catch (e) {}
+  let demo = false;
+  let realState = null;
 
   function emptyState() {
     return {
@@ -441,12 +453,13 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
     try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {}
   }
   function save() {
+    if (demo) return;
     state.updatedAt = new Date().toISOString();
     saveLocal();
     markDirty();
   }
   function markDirty() {
-    if (role !== 'admin') return;
+    if (demo || role !== 'admin') return;
     if (!autoSync) return;
     clearTimeout(syncTimer);
     syncTimer = setTimeout(() => { publish({ auto: true }); }, 6000);
@@ -618,6 +631,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
     const list = order();
     const done = list.filter(function (id) { const t = state.ties[id]; return t && tieResult(t); }).length;
     const pills = [];
+    if (demo) pills.push(['accent', '演示模式']);
     if (!state.draw) pills.push(['accent', '未抽签']);
     else if (done === list.length) pills.push(['live', '已结束']);
     else if (done > 0) pills.push(['live', '进行中']);
@@ -657,7 +671,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
 
   /* ---------------- 渲染：赛程 ---------------- */
   function scoreCell(kind, id, g, side, val, disabled, bad) {
-    if (role !== 'admin') return '<span class="v">' + (val == null ? '–' : val) + '</span>';
+    if (role !== 'admin' || demo) return '<span class="v">' + (val == null ? '–' : val) + '</span>';
     return '<input inputmode="numeric" maxlength="2" value="' + (val == null ? '' : val) + '"' +
       ' data-sc="' + kind + '" data-tie="' + id + '" data-g="' + g + '" data-side="' + side + '"' +
       (disabled ? ' disabled' : '') + (bad ? ' class="bad"' : '') + '>';
@@ -708,7 +722,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
     html += '<div class="r2tool">';
     if (!drawn) {
       html += '<span class="hint" data-hint>' + (r1 ? '男生抽 2 档、女生抽 2 档，双方同时抽' : '第一轮打完后抽档配对') + '</span>';
-      if (role === 'admin') html += '<button class="btn primary mini" data-act="draw2" data-tie="' + id + '" data-drawbtn' + (r1 ? '' : ' disabled') + '>抽档</button>';
+      if (role === 'admin' && !demo) html += '<button class="btn primary mini" data-act="draw2" data-tie="' + id + '" data-drawbtn' + (r1 ? '' : ' disabled') + '>抽档</button>';
     } else {
       ['home', 'away'].forEach(function (side) {
         const team = side === 'home' ? sd.home : sd.away;
@@ -717,7 +731,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
         const women = d.f.map(function (x) { return x + ' ' + (member(team, 'f' + x) || ''); }).join(' · ');
         html += '<span class="who"><b>' + esc(teamName(team)) + '</b> 男 ' + esc(men) + ' ／ 女 ' + esc(women) + '</span>';
       });
-      if (role === 'admin') {
+      if (role === 'admin' && !demo) {
         ['home', 'away'].forEach(function (side) {
           const team = side === 'home' ? sd.home : sd.away;
           const mode = t.r2.pair[side] || 0;
@@ -820,6 +834,11 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
 
   function renderAdmin() {
     const box = $('#adminBody');
+    if (demo) {
+      box.innerHTML = '<div class="adm-block"><div class="adm-note">演示模式：名单、抽签、比分都是示例数据，不能录入、不会发布。' +
+        '退出后回到真实数据。</div><div class="row"><button class="btn primary" data-act="exit-demo">退出演示</button></div></div>';
+      return;
+    }
     const ready = rosterReady();
     const st = standings();
     let html = '';
@@ -917,6 +936,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
       '<button class="btn" data-act="reset-all">重置全部</button></div></div>';
 
     html += '<div class="adm-block"><div class="row" style="margin-top:0">' +
+      '<button class="btn" data-act="demo">演示模式</button>' +
       '<button class="btn" data-act="exit-admin">退出管理端</button></div></div>';
 
     box.innerHTML = html;
@@ -933,6 +953,9 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
       renderAdmin();
     }
     document.documentElement.setAttribute('data-role', role);
+    document.documentElement.setAttribute('data-demo', demo ? '1' : '');
+    const demoBar = document.getElementById('demoBar');
+    if (demoBar) demoBar.hidden = !demo;
   }
 
   /* ---------------- 轻量刷新（录分时不重建输入框） ---------------- */
@@ -1029,6 +1052,8 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
     const b = e.target.closest('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
+    if (act === 'demo') return enterDemo();
+    if (act === 'exit-demo') return exitDemo();
     if (act === 'draw') return doDraw();
     if (act === 'draw2') return doDraw2(b.dataset.tie);
     if (act === 'pair') return doPair(b.dataset.tie, b.dataset.side, Number(b.dataset.idx));
@@ -1045,7 +1070,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
   });
 
   function doDraw() {
-    if (role !== 'admin') return;
+    if (role !== 'admin' || demo) return;
     if (!rosterReady()) { toast('名单未配齐：男女各 12 人、每档 4 人'); return; }
     if (state.draw && !confirm('重新抽签会清空混双与全部比分，继续？')) return;
     state.draw = drawTeams(Date.now() >>> 0);
@@ -1056,7 +1081,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
     toast('已抽签');
   }
   function doDraw2(id) {
-    if (role !== 'admin') return;
+    if (role !== 'admin' || demo) return;
     const t = G(id);
     if (!r1S(t)) { toast('先打完第一轮'); return; }
     r2drawTie(id);
@@ -1064,7 +1089,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
     render();
   }
   function doPair(id, side, idx) {
-    if (role !== 'admin') return;
+    if (role !== 'admin' || demo) return;
     const t = G(id);
     t.r2.pair[side] = idx;
     save();
@@ -1159,6 +1184,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
   const adminNav = $('#adminNav');
   if (adminNav) adminNav.addEventListener('click', function (e) {
     e.preventDefault();
+    if (demo) exitDemo();
     if (role === 'admin') { $('#adminSec').scrollIntoView({ block: 'start' }); return; }
     const dlg = $('#pwdDlg');
     $('#pwdErr').textContent = '';
@@ -1180,6 +1206,61 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
       } catch (e) { $('#pwdErr').textContent = '校验失败'; }
     });
   })();
+
+  /* ---------------- 演示模式 ---------------- */
+  function demoRoster() {
+    const m = [['阿泽', 'A'], ['老白', 'A'], ['大宇', 'A'], ['小川', 'A'], ['阿林', 'B'], ['小潘', 'B'], ['阿康', 'B'], ['老赵', 'B'], ['阿南', 'C'], ['小许', 'C'], ['阿哲', 'C'], ['大鹏', 'C']];
+    const f = [['阿青', 'A'], ['小柔', 'A'], ['婷婷', 'A'], ['小满', 'A'], ['阿雅', 'B'], ['小鹿', 'B'], ['阿静', 'B'], ['圆圆', 'B'], ['阿紫', 'C'], ['小可', 'C'], ['阿玲', 'C'], ['大乔', 'C']];
+    const mk = (a) => a.map(function (x) { return { n: x[0], t: x[1], id: '' }; });
+    return { men: mk(m), women: mk(f) };
+  }
+  function buildDemoState() {
+    const keep = state;
+    state = emptyState();
+    state.roster = demoRoster();
+    state.draw = drawTeams(20261206);
+    state.mixed = {};
+    state.draw.teams.forEach(function (t) {
+      state.mixed[t.id] = {};
+      TAGS.forEach(function (k) { state.mixed[t.id][k] = { m: t.members['m' + k], f: t.members['f' + k] }; });
+    });
+    resetTies();
+    const plan = {
+      'T1-T2': { r1: [[15, 13], [15, 11], [15, 9]], g: [[55, 48], [55, 51]] },
+      'T3-T4': { r1: [[15, 12], [13, 15], [15, 10]], g: [[55, 45], [55, 52]] },
+      'T1-T3': { r1: [[15, 14], [15, 14], [15, 12]], g: [[55, 41], null] }
+    };
+    Object.keys(plan).forEach(function (id) {
+      const p = plan[id], t = G(id);
+      t.r1 = { A: p.r1[0], B: p.r1[1], C: p.r1[2] };
+      r2drawTie(id, mulberry32(7));
+      if (p.g[0]) t.r2.g.A = p.g[0];
+      if (p.g[1]) t.r2.g.B = p.g[1];
+    });
+    state.settings = { date: '2026-12-06 周日 14:00', venue: 'Victor 热爱体育中心 5/6 号场' };
+    state.updatedAt = null;
+    const built = state;
+    state = keep;
+    return built;
+  }
+  function enterDemo() {
+    if (role !== 'admin' || demo) return;
+    clearTimeout(syncTimer);
+    realState = state;
+    demo = true;
+    state = buildDemoState();
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast('演示模式：示例数据，不能录分也不会发布');
+  }
+  function exitDemo() {
+    if (!demo) return;
+    demo = false;
+    state = realState || emptyState();
+    realState = null;
+    render();
+    toast('已退出演示，回到真实数据');
+  }
 
   /* ---------------- 发布 ---------------- */
   function tokenGet() { try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; } }
@@ -1211,6 +1292,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
   }
   async function publish(opts) {
     opts = opts || {};
+    if (demo) { if (!opts.auto) toast('演示模式不能发布'); return false; }
     if (role !== 'admin' || publishing) return false;
     const token = tokenGet();
     if (!token) { if (!opts.auto) toast('先填 GitHub Token'); return false; }
@@ -1252,6 +1334,7 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
     }
   }
   async function poll() {
+    if (demo) return;
     try {
       const r = await fetch(DATA_PATH + '?t=' + Date.now(), { cache: 'no-store' });
       if (!r.ok) return;
@@ -1313,6 +1396,9 @@ window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"me
     rosterReady: rosterReady,
     enterAdmin: enterAdmin,
     exitAdmin: exitAdmin,
+    enterDemo: enterDemo,
+    exitDemo: exitDemo,
+    get demo() { return demo; },
     doDraw: doDraw,
     checkPw: checkPw,
     mixedProblems: mixedProblems,
