@@ -6,7 +6,12 @@
 <title>豆卷杯 sunshine 菜鸟团体赛</title>
 <meta name="description" content="豆卷杯 sunshine 菜鸟团体赛：4 队单循环，双轮混合团体，实时比分与积分榜。">
 <meta name="theme-color" content="#FAF6EC">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='13' fill='%23B4600B'/%3E%3Cg stroke='%23B4600B' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M32 6v6M32 52v6M6 32h6M52 32h6M13.6 13.6l4.2 4.2M46.2 46.2l4.2 4.2M50.4 13.6l-4.2 4.2M17.8 46.2l-4.2 4.2'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="assets/favicon.png" sizes="64x64">
+<link rel="apple-touch-icon" href="assets/logo-192.png">
+<meta property="og:title" content="豆卷杯 sunshine 菜鸟团体赛">
+<meta property="og:description" content="4 队单循环 · 双轮混合团体 · 实时比分与积分榜">
+<meta property="og:image" content="https://cooperzhuang.github.io/doujuan-cup/assets/logo-og.png">
+<meta name="twitter:card" content="summary">
 <style>
 :root{
   --paper:#FAF6EC; --paper-2:#F4EDDD; --card:#FFFDF8;
@@ -39,9 +44,11 @@ b,strong{font-weight:600}
 .hero::after{content:"";position:absolute;right:-110px;top:-80px;width:300px;height:300px;border-radius:50%;z-index:0;
   background:radial-gradient(circle,#F6DEB4 0%,rgba(246,222,180,0) 68%);pointer-events:none}
 .hero>.wrap{position:relative;z-index:1}
-.kicker{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--sun);margin:0 0 8px}
-.kicker::before{content:"";width:26px;height:1px;background:var(--sun-2);opacity:.7}
-.hero h1{font-size:clamp(27px,7.2vw,40px);line-height:1.2;margin:0 0 10px;letter-spacing:-.02em;font-weight:700}
+.hero-top{display:flex;flex-direction:column;align-items:flex-start;gap:11px}
+.hero-top .logo{width:62px;height:62px;flex:none;border-radius:50%;background:#fff;box-shadow:0 8px 22px rgba(26,22,17,.12)}
+.hero-txt{min-width:0}
+@media(min-width:620px){.hero-top{flex-direction:row;align-items:center;gap:18px}.hero-top .logo{width:84px;height:84px}}
+.hero h1{font-size:clamp(25px,6.6vw,38px);line-height:1.2;margin:0 0 6px;letter-spacing:-.02em;font-weight:700}
 .hero h1 em{font:italic 400 .9em Georgia,"Times New Roman",serif;color:var(--sun);letter-spacing:0;padding:0 .05em;white-space:nowrap}
 .hero .meta{margin:0;color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:6px 14px}
 .hero .meta span{display:inline-flex;align-items:center;gap:6px}
@@ -251,9 +258,13 @@ html[data-role="viewer"] .admin-only{display:none!important}
 
 <header class="hero">
   <div class="wrap">
-    <p class="kicker">Team Cup · 2026</p>
-    <h1 id="heroTitle">豆卷杯 <em>sunshine</em> 菜鸟团体赛</h1>
-    <p class="meta" id="heroMeta"></p>
+    <div class="hero-top">
+      <img class="logo" src="assets/logo.webp" width="64" height="64" alt="豆卷杯 sunshine 菜鸟团体赛">
+      <div class="hero-txt">
+        <h1 id="heroTitle">豆卷杯 <em>sunshine</em> 菜鸟团体赛</h1>
+        <p class="meta" id="heroMeta"></p>
+      </div>
+    </div>
     <div class="pills" id="heroPills"></div>
   </div>
 </header>
@@ -357,8 +368,8 @@ html[data-role="viewer"] .admin-only{display:none!important}
 
 <script>
 /* 构建时替换：口令校验哈希 / 头像表 / 初始数据 / 页面版本号 */
-window.__BUILD_ID__ = "3475107c25fe";
-window.__ADMIN_HASH__ = "ff3e2adb15dc9b521025b2d12455dfe17dd3d728cf2875d1f03c0e383d1656ce";
+window.__BUILD_ID__ = "db600c5adf65";
+window.__ADMIN_HASH__ = "6c9807c414a6a4221682f473c1cc6e666c52be678797c1edc79cee3b55089c34";
 window.__AVATARS__ = {};
 window.__INITIAL_DATA__ = {"v":1,"settings":{"date":"","venue":""},"roster":{"men":[],"women":[]},"draw":null,"mixed":null,"order":[],"ties":{},"updatedAt":null};
 </script>
